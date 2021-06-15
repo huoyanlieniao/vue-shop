@@ -53,7 +53,7 @@
                     :auto-upload="false"
                     :limit="1"
                     :on-exceed="handleExceed"
-                    :file-list="image1"
+                    :file-list="licence"
             >
                 <el-button size="small" type="primary">点击上传</el-button>
                 <template #tip>
@@ -75,7 +75,7 @@
                     multiple
                     :limit="1"
                     :on-exceed="handleExceed"
-                    :file-list="image2"
+                    :file-list="identityFront"
             >
                 <el-button size="small" type="primary">点击上传</el-button>
                 <template #tip>
@@ -96,7 +96,7 @@
                     multiple
                     :limit="1"
                     :on-exceed="handleExceed"
-                    :file-list="image3"
+                    :file-list="identityBack"
             >
                 <el-button size="small" type="primary">点击上传</el-button>
                 <template #tip>
@@ -123,6 +123,7 @@
             //用户名检验
             var checkUsername = (rule, value, callback) => {
                 console.log(value)
+                this.isUser(value)
                 if (!value) {
                     boolean = false;
                     return callback(new Error('用户名不能为空'));
@@ -130,10 +131,15 @@
                 } else if (value.length < 2 || value.length > 10) {
                     boolean = false;
                     callback(new Error('用户名长度需在2到10之间'))
-                } else {
-                    boolean = true;
+                } else if (this.usercode==437){
+                    //console.log(!this.isUser(value))
+                    boolean=false;
+                    callback(new Error('用户名已占用'))
+
+                }else{
+                    boolean=true;
+                    callback()
                 }
-                callback();
             }
 
             //真实姓名检验
@@ -144,8 +150,9 @@
                     return callback(new Error('真实姓名不能为空'));
                 } else {
                     boolean = true;
+                    callback();
                 }
-                callback();
+
             }
 
             //密码检验
@@ -159,8 +166,9 @@
                     callback(new Error('密码长度需在8到16之间'))
                 } else {
                     boolean = true;
+                    callback();
                 }
-                callback();
+
             }
             //密码重复输入
             var checkPassword2 = (rule, value, callback) => {
@@ -182,6 +190,7 @@
             //邮箱检验
             var checkEmail = (rule, value, callback) => {
                 console.log(value)
+                this.isEmail(value)
                 const reg = /^([a-zA-Z0-9]+[-_\\.]?)+@[a-zA-Z0-9]+\.[a-z]+$/;
                 if (value == '' || value == undefined || value == null) {
                     boolean = true;
@@ -190,11 +199,16 @@
                     if (!reg.test(value)) {
                         boolean = false;
                         callback(new Error('请输入正确的邮箱地址'));
-                    } else {
-                        boolean = true;
-                        callback();
+                    } else if (this.emailcode==438){
+                        boolean=false;
+                        callback(new Error('邮箱已占用'))
+
+                    }else{
+                        boolean=true;
                     }
+
                 }
+                callback();
             }
 
 
@@ -211,10 +225,11 @@
                     callback(new Error('手机号不合法'));
                 } else {
                     boolean = true;
+                    callback();
                 }
 
 
-                callback();
+
             }
 
 
@@ -237,17 +252,20 @@
                     callback(new Error('银行卡号开头6位不符合规范'))
                 } else {
                     boolean = true;
+                    callback();
                 }
 
-                callback();
+
             }
 
 
             return {
                 value: [],
-                image1: [],
-                image2: [],
-                image3: [],
+                licence: [],
+                usercode:0,
+                emailcode:0,
+                identityFront: [],
+                identityBack: [],
                 ruleForm: {
                     name: '',
                     username: '',
@@ -17469,6 +17487,20 @@
             };
         },
         methods: {
+            isUser(data){
+                //console.log("aaaaa")
+                UserAPI.isuser(data).then(res=>{
+                    console.log(res)
+                    this.usercode=res.data.code
+                })
+            },
+            isEmail(data){
+                //console.log("aaaaa")
+                UserAPI.isEmial(data).then(res=>{
+                    console.log(res)
+                    this.emailcode=res.data.code
+                })
+            },
             handleRemove(file, fileList) {
                 console.log(file, fileList);
             },
@@ -17491,28 +17523,34 @@
                         username: this.ruleForm.username,
                         password: this.ruleForm.password,
                         email: this.ruleForm.email,
-                        role: "0"
+                        role: "1"
                     }
-                    let commonUser = {
+                    let businessUser = {
                         name: this.ruleForm.name,
                         phone: this.ruleForm.phone,
                         sex: this.ruleForm.sex,
-                        city: this.ruleForm.city,
+                        identification:"",
                         account: this.ruleForm.account
                     }
 
-                    console.log(this.image1)
-                    console.log(this.image2)
-                    console.log(this.image3)
+                    console.log(this.licence)
+                    console.log(this.identityFront)
+                    console.log(this.identityBack)
+
+
                     let formData = new FormData();
                     formData.append("user", JSON.stringify(user));
-                    formData.append("commonUser", JSON.stringify(commonUser));
+                    formData.append("businessUser", JSON.stringify(businessUser))
+                    formData.append("licence",this.licence)
+                    formData.append("identityFront",this.identityFront)
+                    formData.append("identityBack",this.identityBack)
 
-                    UserAPI.registerCommon(user, commonUser).then(res => {
+                    console.log(formData)
+                    UserAPI.registerBusinessCommon(formData).then(res => {
                         console.log(res)
                     })
 
-
+                    this.$router.push('/');
                 } else {
                     window.alert("表单数据存在错误");
                 }

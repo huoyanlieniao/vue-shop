@@ -7,43 +7,58 @@
  -->
 <template>
     <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+        <el-button :plain="true" @click="open1">密码修改成功</el-button>
+        <el-button :plain="true" @click="open2">地址修改成</el-button>
         <el-form-item label="用户名" prop="username">
-            <el-input v-model="ruleForm.username"></el-input>
+            <el-input v-model="ruleForm.username" readonly></el-input>
         </el-form-item>
         <el-form-item label="真实姓名" prop="name">
-            <el-input v-model="ruleForm.name"></el-input>
+            <el-input v-model="ruleForm.name" readonly></el-input>
         </el-form-item>
         <el-form-item label="性别" prop="sex">
-            <el-radio v-model="ruleForm.sex" label="0">女</el-radio>
-            <el-radio v-model="ruleForm.sex" label="1">男</el-radio>
+            <el-radio v-model="ruleForm.sex" label="0" disabled="true">女</el-radio>
+            <el-radio v-model="ruleForm.sex" label="1"  disabled="true">男</el-radio>
         </el-form-item>
-        <el-form-item label="密码" prop="password">
-            <el-input v-model="ruleForm.password"></el-input>
-        </el-form-item>
-        <el-form-item label="再次输入密码" prop="Password2">
-            <el-input v-model="ruleForm.Password2"></el-input>
-        </el-form-item>
-        <el-form-item label="手机号" prop="phone">
-            <el-input v-model="ruleForm.phone"></el-input>
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-            <el-input v-model="ruleForm.email"></el-input>
-        </el-form-item>
-        <el-form-item label="银行卡号" prop="account">
-            <el-input v-model="ruleForm.account"></el-input>
-        </el-form-item>
-        <el-form-item label="城市" prop="city">
-            <el-cascader
-                    ref="city"
-                    v-model="value"
-                    :options="options"
-                    @change="handleChange"
-            ></el-cascader>
+        <el-button type="primary" @click="changePassword()">修改密码</el-button>
+<!--        <el-form-item label="密码" prop="password">-->
+<!--            <el-input v-model="ruleForm.password" show-password></el-input>-->
+<!--          -->
+<!--        </el-form-item>-->
+
+        <el-form-item label="新密码" prop="newPassword" v-if="ruleForm.showNewPassword">
+            <el-input v-model="ruleForm.newPassword"></el-input>
         </el-form-item>
 
+        <el-form-item label="手机号" prop="phone">
+            <el-input v-model="ruleForm.phone" readonly></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+            <el-input v-model="ruleForm.email" readonly></el-input>
+        </el-form-item>
+        <el-form-item label="银行卡号" prop="account" >
+            <el-input v-model="ruleForm.account" show-password></el-input>
+        </el-form-item>
+        <el-form-item label="城市" prop="city" >
+            <el-input v-model="ruleForm.city" readonly></el-input>
+        </el-form-item>
+
+        <el-form-item prop="changeCity">
+            <el-button type="primary" @click="changeCity()">修改住址</el-button>
+        </el-form-item>
+        <el-form-item label="新地址" prop="newCity" v-if="ruleForm.showNewCity">
+            <el-form-item label="城市" prop="newCity">
+                <el-cascader
+                        ref="newCity"
+                        v-model="value"
+                        :options="options"
+                        @change="handleChange"
+                ></el-cascader>
+            </el-form-item>
+        </el-form-item>
+
+
         <el-form-item>
-            <el-button type="primary" @click="submitForm('ruleForm')">立即创建</el-button>
-            <el-button @click="resetForm('ruleForm')">重置</el-button>
+            <el-button type="primary" @click="submitForm('ruleForm')">更新创建</el-button>
         </el-form-item>
     </el-form>
 
@@ -52,131 +67,29 @@
 <script>
     import * as UserAPI from '../api/user/index.js'
     import { h } from 'vue';
+    import md5 from 'js-md5';
+    import { defineComponent } from 'vue'
+    import { ElMessage } from 'element-plus'
     var boolean=true
     export default {
         data() {
-            //用户名检验
-            var checkUsername=(rule,value,callback)=>{
-                console.log(value)
-                if(!value){
-                    boolean=false;
-                    return callback(new Error('用户名不能为空'));
-
-                }else if (value.length < 2 || value.length > 10) {
-                    boolean=false;
-                    callback(new Error('用户名长度需在2到10之间'))
-                }else{
-                    boolean=true;
-                }
-                callback();
-            }
-
-            //真实姓名检验
-            var checkname=(rule,value,callback)=>{
-                console.log(value)
-                if (value == '' || value == undefined || value == null) {
-                    boolean=false;
-                    return callback(new Error('真实姓名不能为空'));
-                }else{
-                    boolean=true;
-                }
-                callback();
-            }
-
             //密码检验
             var checkPassword=(rule,value,callback)=>{
                 console.log(this.ruleForm.password)
+                console.log(this.ruleForm.newPassword)
                 if(!value){
                     boolean=false;
-                    return callback(new Error('密码不能为空'));
+                    return callback(new Error('新密码不能为空'));
                 }else if (value.length < 8 || value.length > 16) {
                     boolean=false;
                     callback(new Error('密码长度需在8到16之间'))
-                }else{
+                }else if(this.ruleForm.password==md5(this.ruleForm.newPassword)){
+                    boolean=false;
+                    callback(new Error('新旧密码不能相同'))
+                }
+                else{
                     boolean=true;
                 }
-                callback();
-            }
-            //密码重复输入
-            var checkPassword2 = (rule, value, callback) => {
-                console.log(this.ruleForm.Password2)
-                if (value === '') {
-                    boolean=false;
-                    callback(new Error('请再次输入密码'))
-                }
-                if (value !== this.ruleForm.password) {
-                    boolean=false;
-                    callback(new Error('两次输入密码不一致!'))
-                } else {
-                    boolean=true;
-                    callback();
-                }
-            }
-
-
-            //邮箱检验
-            var checkEmail=(rule,value,callback)=>{
-                console.log(value)
-                const reg = /^([a-zA-Z0-9]+[-_\\.]?)+@[a-zA-Z0-9]+\.[a-z]+$/;
-                if (value == '' || value == undefined || value == null) {
-                    boolean=true;
-                    callback();
-                } else {
-                    if (!reg.test(value)) {
-                        boolean=false;
-                        callback(new Error('请输入正确的邮箱地址'));
-                    } else {
-                        boolean=true;
-                        callback();
-                    }
-                }
-            }
-
-
-            //手机号检验
-            var checkPhone=(rule,value,callback)=>{
-                console.log(value)
-                if (value == '' || value == undefined || value == null) {
-                    boolean=false;
-                    callback(new Error('手机号不能为空'));
-                }
-                var phonereg = 11 && /^((13|14|15|16|17|18|19)[0-9]{1}\d{8})$/
-                if (!phonereg.test(value)) {
-                    boolean=false;
-                    callback(new Error('手机号不合法'));
-                }else {
-                    boolean=true;
-                }
-
-
-                callback();
-            }
-
-
-            //银行卡号检验
-            var checkaccount=(rule,value,callback)=>{
-                console.log(value)
-                const strBin = '10,18,30,35,37,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,58,60,62,65,68,69,84,87,88,94,95,98,99'
-                console.log(value)
-                if (value == '' || value == undefined || value == null) {
-                    boolean=false;
-                    callback(new Error('收款账户不能为空'))
-                }
-                else if (!Number.isInteger(value)) {
-                    boolean=false;
-                    callback(new Error('银行卡号必须全为数字'))
-                }
-                else if (value.trim().length < 12 || value.trim().length > 19) {
-                    boolean=false;
-                    callback(new Error('银行卡号长度必须在12到19之间'))
-                }
-                else if (strBin.indexOf(value.substring(0, 2)) === -1) {
-                    boolean=false;
-                    callback(new Error('银行卡号开头6位不符合规范'))
-                }else{
-                    boolean=true;
-                }
-
                 callback();
             }
 
@@ -194,34 +107,16 @@
                     sex:'1',
                     city:'',
                     account:'',
+                    newPassword:'',
+                    newCity:'',
+                    showNewPassword:false,
+                    showNewCity:false
                 },
                 rules: {
-                    username: [
-                        { validator: checkUsername, trigger: 'blur' }
-                    ],
-                    password: [
+
+                    newPassword: [
                         { validator: checkPassword, trigger: 'blur' }
-                    ],
-                    Password2: [
-                        { validator: checkPassword2, trigger: 'blur' }
-                    ],
-                    email: [
-                        { validator: checkEmail, trigger: 'blur' }
-                    ],
-                    name: [
-                        { validator: checkname, trigger: 'blur' }
-                    ],
-                    phone: [
-                        { validator: checkPhone, trigger: 'blur' }
-                    ],
-                    account: [
-                        { validator: checkaccount, trigger: 'blur' }
                     ]
-
-
-
-
-
                 },
                 //城市数据
 
@@ -17510,44 +17405,93 @@
                         label: "其他",
                     }
                 ]
+
             };
+        },
+        created(){
+            let userId=UserAPI.getCookie("userId")
+            //console.log(userId)
+            UserAPI.getUserId(userId).then(res=>{
+                let data=res.data.result[0]
+                console.log(data)
+                //这里只能用这个json的这个方法
+                this.ruleForm.name=UserAPI.remdou(JSON.stringify(data.name))
+                this.ruleForm.username=UserAPI.remdou(JSON.stringify(data.username))
+                this.ruleForm.password=UserAPI.remdou(JSON.stringify(data.password))
+                this.ruleForm.email=UserAPI.remdou(JSON.stringify(data.email))
+                this.ruleForm.role=UserAPI.remdou(JSON.stringify(data.role))
+                this.ruleForm.phone=UserAPI.remdou(JSON.stringify(data.phone))
+                this.ruleForm.sex=UserAPI.remdou(JSON.stringify(data.sex))
+                this.ruleForm.account=UserAPI.remdou(JSON.stringify(data.account))
+                this.ruleForm.city=UserAPI.remdou(JSON.stringify(data.city))
+
+
+            })
+
         },
         methods: {
             handleChange(value){
-                this.ruleForm.city = this.ruleForm.city+this.$refs["city"].getCheckedNodes()[0].pathLabels
+                this.ruleForm.newCity = this.ruleForm.newCity+this.$refs["newCity"].getCheckedNodes()[0].pathLabels
+            },
+            changePassword(){
+                console.log(this.ruleForm.showNewPassword)
+              this.ruleForm.showNewPassword = !this.ruleForm.showNewPassword
+            },
+            changeCity(){
+                this.ruleForm.showNewCity = !this.ruleForm.showNewCity
+            },
+            open1() {
+                ElMessage.success({
+                    message: '密码修改成功',
+                    type: 'success'
+                });
+            },
+            open2() {
+                ElMessage.success({
+                    message: '地址修改成功',
+                    type: 'success'
+                });
             },
             submitForm(formName) {
                 boolean=true
                 if(boolean==true){
-                    let user ={
-                        username:this.ruleForm.username,
-                        password:this.ruleForm.password,
-                        email:this.ruleForm.email,
-                        role:"0"
+                    if(this.ruleForm.showNewPassword){
+                        let formData = new FormData();
+                        let email=this.ruleForm.email
+                        let oldPassword=this.ruleForm.password
+                        let newPassword=this.ruleForm.newPassword
+                        formData.append("email",email)
+                        formData.append("oldPassword",oldPassword)
+                        formData.append("newPassword",newPassword)
+
+                        UserAPI.upPassword(formData).then(res=>{
+                           console.log(res)
+                            this.open1()
+                        })
+
                     }
-                    let commonUser= {
-                        name: this.ruleForm.name,
-                        phone: this.ruleForm.phone,
-                        sex: this.ruleForm.sex,
-                        city: this.ruleForm.city,
-                        accont: this.ruleForm.account
+                    if(this.ruleForm.showNewCity){
+                        let data={
+                            username:this.ruleForm.username,
+                            address:this.ruleForm.newCity
+                        }
+                        console.log(data)
+                        UserAPI.upAddress(data).then(res=>{
+                            console.log(res)
+                            this.open2()
+                        })
+
                     }
-
-                    UserAPI.registerCommon(user,commonUser).then(res=>{
-                        console.log(res)
-                    })
-
-
-
-
+                    this.$router.push('/');
                 }else{
                     window.alert("表单数据存在错误");
                 }
 
             },
-            beforeCreate(){
 
-            }
+
+
+
         }
     }
 </script>

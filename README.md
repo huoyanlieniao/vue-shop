@@ -1,24 +1,34 @@
-# shop
+[toc]
 
-## Project setup
-```
-npm install
-```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
 
-### Compiles and minifies for production
-```
-npm run build
-```
+## vue3 商城
 
-### Lints and fixes files
-```
-npm run lint
-```
+### 用户端
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- [ ] 注册
+
+  - [ ] 普通用户
+    - [ ] 银行卡卡号是否全为数字
+  - [ ] 商家
+  - [ ] 验证码
+- [ ] 登录
+
+  - [ ] 验证码
+  - [x] 其他信息
+  - [x] 可以注册
+- [ ] 更新用户信息
+
+  - [x] 地址
+  - [x] 密码
+- [ ] 商品详情页
+- [ ] 
+
+
+
+
+
+
+
+
+

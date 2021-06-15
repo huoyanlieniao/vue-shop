@@ -6,6 +6,7 @@
  * @version: 1.0
  -->
 <template>
+
     <div class="login">
         <el-form :model="form" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
         <el-form-item label="用户名" prop="username">
@@ -35,6 +36,7 @@
 
     </el-form>
     </div>
+
 </template>
 
 <script>
@@ -107,6 +109,7 @@
 
                 //console.log(this.form);
                 UserAPI.login(this.form).then(res=> {
+                    console.log(res)
                     var box={
                         title: 'aaa',
                         messagetitle: 'bbb',
@@ -139,9 +142,24 @@
                             beforeClose: (action, instance, done) => {
                                 if (action === 'confirm') {
                                     if ( box.type==='success'){
-                                        localStorage.setItem('user',this.form.username);
+                                        let data=res.data.result[0];
+                                        //这里只能用这个json的这个方法
+                                        let userId=UserAPI.remdou(JSON.stringify(data.userId))
+                                        document.cookie="userId:"+"="+userId
+                                        //更新为cookie
+                                        // localStorage.setItem('userId',this.form.userId);
                                         this.$msgbox.close();
-                                        this.$router.push('/');
+                                        if(localStorage.getItem('nextpush')!=null){
+                                            let a=localStorage.getItem('nextpush')
+                                            a=a.split("\"")
+                                            a=a[1]
+                                            console.log(a)
+                                            localStorage.removeItem('nextpush')
+                                            this.$router.push({path:'/gooddetail',query:{goodsUUID:a}});
+                                        }else{
+                                            this.$router.push('/');
+                                        }
+
                                     }
                                     done();
 

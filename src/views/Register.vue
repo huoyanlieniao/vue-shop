@@ -8,7 +8,7 @@
 <template>
     <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
         <el-form-item label="用户名" prop="username">
-            <el-input v-model="ruleForm.username"></el-input>
+            <el-input v-model="ruleForm.username" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="真实姓名" prop="name">
             <el-input v-model="ruleForm.name"></el-input>
@@ -27,7 +27,7 @@
             <el-input v-model="ruleForm.phone"></el-input>
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
-            <el-input v-model="ruleForm.email"></el-input>
+            <el-input v-model="ruleForm.email" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="银行卡号" prop="account">
             <el-input v-model="ruleForm.account"></el-input>
@@ -52,12 +52,14 @@
 <script>
     import * as UserAPI from '../api/user/index.js'
     import { h } from 'vue';
+    import {isuser} from "@/api/user";
     var boolean=true
     export default {
         data() {
             //用户名检验
             var checkUsername=(rule,value,callback)=>{
                 console.log(value)
+                this.isUser(value)
                 if(!value){
                     boolean=false;
                     return callback(new Error('用户名不能为空'));
@@ -65,10 +67,15 @@
                 }else if (value.length < 2 || value.length > 10) {
                     boolean=false;
                     callback(new Error('用户名长度需在2到10之间'))
+                }else if (this.usercode==437){
+                    //console.log(!this.isUser(value))
+                    boolean=false;
+                    callback(new Error('用户名已占用'))
+
                 }else{
                     boolean=true;
+                    callback()
                 }
-                callback();
             }
 
             //真实姓名检验
@@ -117,6 +124,7 @@
             //邮箱检验
             var checkEmail=(rule,value,callback)=>{
                 console.log(value)
+                this.isEmail(value)
                 const reg = /^([a-zA-Z0-9]+[-_\\.]?)+@[a-zA-Z0-9]+\.[a-z]+$/;
                 if (value == '' || value == undefined || value == null) {
                     boolean=true;
@@ -125,12 +133,19 @@
                     if (!reg.test(value)) {
                         boolean=false;
                         callback(new Error('请输入正确的邮箱地址'));
-                    } else {
+                    } else if (this.emailcode==438){
+                        boolean=false;
+                        callback(new Error('邮箱已占用'))
+
+                    }else{
                         boolean=true;
                         callback();
                     }
+
+                    }
+
                 }
-            }
+
 
 
             //手机号检验
@@ -146,10 +161,11 @@
                         callback(new Error('手机号不合法'));
                     }else {
                         boolean=true;
+                        callback();
                     }
 
 
-                        callback();
+
                 }
 
 
@@ -162,10 +178,10 @@
                     boolean=false;
                     callback(new Error('收款账户不能为空'))
                 }
-                else if (!Number.isInteger(value)) {
-                    boolean=false;
-                    callback(new Error('银行卡号必须全为数字'))
-                }
+                // else if (!Number.isInteger(value)) {
+                //     boolean=false;
+                //     callback(new Error('银行卡号必须全为数字'))
+                // }
                 else if (value.trim().length < 12 || value.trim().length > 19) {
                     boolean=false;
                     callback(new Error('银行卡号长度必须在12到19之间'))
@@ -175,14 +191,17 @@
                     callback(new Error('银行卡号开头6位不符合规范'))
                 }else{
                     boolean=true;
+                    callback();
                 }
 
-                callback();
+
             }
 
 
             return {
                 value: [],
+                usercode:0,
+                emailcode:0,
                 ruleForm: {
                     name:'',
                     username: '',
@@ -197,7 +216,7 @@
                 },
                 rules: {
                     username: [
-                        { validator: checkUsername, trigger: 'blur' }
+                        { validator: checkUsername, trigger: 'blur'}
                     ],
                     password: [
                         { validator: checkPassword, trigger: 'blur' }
@@ -212,7 +231,7 @@
                         { validator: checkname, trigger: 'blur' }
                     ],
                     phone: [
-                        { validator: checkPhone, trigger: 'blur' }
+                        { validator: checkPhone, trigger: 'blur'}
                     ],
                     account: [
                         { validator: checkaccount, trigger: 'blur' }
@@ -17513,6 +17532,21 @@
             };
         },
         methods: {
+            isUser(data){
+                //console.log("aaaaa")
+                UserAPI.isuser(data).then(res=>{
+                    console.log(res)
+                    this.usercode=res.data.code
+                })
+            },
+            isEmail(data){
+                //console.log("aaaaa")
+                UserAPI.isEmial(data).then(res=>{
+                    console.log(res)
+                    this.emailcode=res.data.code
+                })
+            },
+
             handleChange(value){
                 this.ruleForm.city = this.ruleForm.city+this.$refs["city"].getCheckedNodes()[0].pathLabels
             },
@@ -17541,10 +17575,7 @@
                     UserAPI.registerCommon(formData).then(res=>{
                         console.log(res)
                     })
-
-
-
-
+                    this.$router.push('/');
                 }else{
                     window.alert("表单数据存在错误");
                 }

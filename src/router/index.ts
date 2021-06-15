@@ -45,8 +45,20 @@ const routes: Array<RouteRecordRaw> = [
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/UserDetail.vue')
+    component: () => import(/* webpackChunkName: "about" */ '../views/UserDetail.vue'),
+    meta: {
+      requireAuth: true // 需要验证登录状态
+    }
   },
+  {
+    path: '/gooddetail',
+    name: 'Gooddetail',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/GoodDetail.vue')
+  },
+
 ]
 
 const router = createRouter({
