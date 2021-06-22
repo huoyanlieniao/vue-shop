@@ -6,9 +6,23 @@
  * @version: 1.0
  -->
 <template>
+    <div class="total">
+        <div class="header">
+            <div class="logo-con w clearfix">
+<!--                <a href="https://www.jd.com" class="logo "></a>-->
+<!--                <div class="logo-title">用户详细信息</div>-->
+<!--&lt;!&ndash;                <div class="have-account">已有账号？ <a href="http://localhost:8080/login?ReturnUrl=http://localhost:8080/">&ndash;&gt;-->
+<!--&lt;!&ndash;                    <font color="#FF0000">请登录&gt;</font>&ndash;&gt;-->
+<!--&lt;!&ndash;                </a></div>&ndash;&gt;-->
+                <div class="have-account">
+                <p>剩余钱数:{{ruleForm.currentMoney}} 积分:{{ruleForm.integral}} 总钱数:{{ruleForm.sumMoney}} <h5  @click="addMoney()">充 值</h5></p>
+                </div>
+            </div>
+        </div>
+        <div class="body">
     <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
-        <el-button :plain="true" @click="open1">密码修改成功</el-button>
-        <el-button :plain="true" @click="open2">地址修改成</el-button>
+<!--        <el-button :plain="true" @click="open1">密码修改</el-button>-->
+<!--        <el-button :plain="true" @click="open2">地址修改</el-button>-->
         <el-form-item label="用户名" prop="username">
             <el-input v-model="ruleForm.username" readonly></el-input>
         </el-form-item>
@@ -19,15 +33,7 @@
             <el-radio v-model="ruleForm.sex" label="0" disabled="true">女</el-radio>
             <el-radio v-model="ruleForm.sex" label="1"  disabled="true">男</el-radio>
         </el-form-item>
-        <el-button type="primary" @click="changePassword()">修改密码</el-button>
-<!--        <el-form-item label="密码" prop="password">-->
-<!--            <el-input v-model="ruleForm.password" show-password></el-input>-->
-<!--          -->
-<!--        </el-form-item>-->
 
-        <el-form-item label="新密码" prop="newPassword" v-if="ruleForm.showNewPassword">
-            <el-input v-model="ruleForm.newPassword"></el-input>
-        </el-form-item>
 
         <el-form-item label="手机号" prop="phone">
             <el-input v-model="ruleForm.phone" readonly></el-input>
@@ -41,9 +47,17 @@
         <el-form-item label="城市" prop="city" >
             <el-input v-model="ruleForm.city" readonly></el-input>
         </el-form-item>
+        <el-button type="primary" @click="changePassword()" v-if="!admin">修改密码</el-button>
+        <!--        <el-form-item label="密码" prop="password">-->
+        <!--            <el-input v-model="ruleForm.password" show-password></el-input>-->
+        <!--          -->
+        <!--        </el-form-item>-->
 
+        <el-form-item label="新密码" prop="newPassword" v-if="ruleForm.showNewPassword">
+            <el-input v-model="ruleForm.newPassword"></el-input>
+        </el-form-item>
         <el-form-item prop="changeCity">
-            <el-button type="primary" @click="changeCity()">修改住址</el-button>
+            <el-button type="primary" @click="changeCity()" v-if="!admin">修改住址</el-button>
         </el-form-item>
         <el-form-item label="新地址" prop="newCity" v-if="ruleForm.showNewCity">
             <el-form-item label="城市" prop="newCity">
@@ -55,23 +69,40 @@
                 ></el-cascader>
             </el-form-item>
         </el-form-item>
-
-
         <el-form-item>
-            <el-button type="primary" @click="submitForm('ruleForm')">更新创建</el-button>
+            <el-button type="primary" @click="submitForm('ruleForm')" v-if="!admin">更新创建</el-button>
         </el-form-item>
+
     </el-form>
+        </div>
+    </div>
+
+
+    <el-dialog title="充值" v-model="addMoneyNode">
+        <p>充值金额</p>
+        <el-input v-model="addMoneyNum"></el-input>
+        <template #footer>
+                                <span class="dialog-footer">
+                                  <el-button @click="addMoneyNode=false">取 消</el-button>
+                                  <el-button type="primary" @click="addMoneygo()">充 值</el-button>
+                                </span>
+        </template>
+    </el-dialog>
+
+
 
 </template>
 
 <script>
     import * as UserAPI from '../api/user/index.js'
+    import * as WalletAPI from '../api/wallet/index.js'
     import { h } from 'vue';
     import md5 from 'js-md5';
     import { defineComponent } from 'vue'
     import { ElMessage } from 'element-plus'
     var boolean=true
     export default {
+        inject:['reload'],
         data() {
             //密码检验
             var checkPassword=(rule,value,callback)=>{
@@ -95,8 +126,15 @@
 
 
             return {
+                admin:false,
                 value: [],
+                addMoneyNum:0,
+                addMoneyNode:false,
                 ruleForm: {
+                    UserId:"",
+                    integral:0,
+                    sumMoney:0.0,
+                    currentMoney:0.0,
                     name:'',
                     username: '',
                     password: '',
@@ -17409,7 +17447,19 @@
             };
         },
         created(){
-            let userId=UserAPI.getCookie("userId")
+            let userId=UserAPI.getCookie("userId:")
+
+            if(userId ==""){
+                userId=this.$route.query.useId
+            }
+            if(userId ==""){
+                this.showMessage("请登录",'info')
+                this.$router.push('/login')
+            }
+            if(this.$route.query.admin!=null){
+                this.admin=true
+            }
+
             //console.log(userId)
             UserAPI.getUserId(userId).then(res=>{
                 let data=res.data.result[0]
@@ -17424,9 +17474,20 @@
                 this.ruleForm.sex=UserAPI.remdou(JSON.stringify(data.sex))
                 this.ruleForm.account=UserAPI.remdou(JSON.stringify(data.account))
                 this.ruleForm.city=UserAPI.remdou(JSON.stringify(data.city))
+                this.ruleForm.UserId=UserAPI.remdou(JSON.stringify(data.userId))
 
-
+                //钱包数据
+                console.log(this.ruleForm.UserId)
+                WalletAPI.getWallet(this.ruleForm.UserId).then(res=>{
+                    let a=res.data.result[0]
+                    this.ruleForm.integral=a.integral
+                    this.ruleForm.sumMoney=a.sumMoney
+                    this.ruleForm.currentMoney=a.currentMoney
+                })
             })
+
+
+
 
         },
         methods: {
@@ -17439,6 +17500,12 @@
             },
             changeCity(){
                 this.ruleForm.showNewCity = !this.ruleForm.showNewCity
+            },
+            showMessage(data,status){
+                this.$message({
+                    type: status,
+                    message: data
+                });
             },
             open1() {
                 ElMessage.success({
@@ -17488,14 +17555,204 @@
                 }
 
             },
+            addMoney(){
+                this.addMoneyNode=true
+            },
+            addMoneygo(){
+                if(this.addMoneyNum>0){
+                    WalletAPI.addMoney(this.ruleForm.username,this.addMoneyNum).then(res=>{
+                        console.log(res)
+                        let data=res.data
 
+                        var box={
+                            title: 'aaa',
+                            messagetitle: 'bbb',
+                            messagemain: 'ccc',
+                            type: 'ddd'
+                        }
 
+                        if(data.code==227){
+                            box.title='消息';
+                            box.messagetitle='充值成功';
+                            box.messagemain='您已充值成功';
+                            box.type='success';
+                        }else{
+                            box.title='消息',
+                                box.messagetitle='错误',
+                                box.messagemain='充值失败',
+                                box.type='error'
+                        }
+                        this.$msgbox({
+                            title:  box.title,
+                            message: h('p', null, [
+                                h('span', null,  box.messagetitle),
+                                h('i', {style: 'color: teal'}, box.messagemain)
+                            ]),
+                            type: box.type,
+                            confirmButtonText: '确定',
+                            cancelButtonText: '取消',
+                            beforeClose: (action, instance, done) => {
+                                if (action === 'confirm') {
+                                    if ( box.type==='success'){
+                                    }
+                                    done()
+                                    this.addMoneyNode=false
+                                    this.reload()
+                                }else{
+                                    done()
+                                }
 
+                            }
+                        })
+                    })}
+
+            },
+            goout(){
+                var exp = new Date();
+                exp.setTime(exp.getTime() - 1);
+                if(this.userId=!null){
+                    document.cookie = "userId:"+"="+""+";expires="+exp.toGMTString()
+                }
+                if(this.businesssId=!null){
+                    document.cookie = "businesssId:"+"="+""+";expires="+exp.toGMTString()
+                }
+                if(this.admin=!null){
+                    document.cookie = "admin:"+"="+""+";expires="+exp.toGMTString()
+                }
+                this.dialogVisible=false
+                this.reload()
+            }
+            ,gotologin(){
+                console.log("aa")
+                this.$router.push('/login');
+            },
 
         }
     }
 </script>
 
 <style scoped>
+    .header {
+        height: 110px;
+        background: url(//misc.360buyimg.com/user/reg/3.0.0/css/i/headbg.jpg) repeat-x left bottom;
+    }
 
+    .header .logo {
+        width: 120px;
+        height: 80px;
+        margin-top: 26px;
+        margin-right: 1.25rem;
+        float: left;
+        background: url(../assets/logo1.png) no-repeat;
+        background-size:cover;
+    }
+    .clearfix:after {
+        content: ".";
+        display: block;
+        height: 0;
+        clear: both;
+        visibility: hidden;
+    }
+
+    .header .have-account {
+        font-size: 22px;
+        float: right;
+        height: 50px;
+        margin-top: 34px;
+        color: #999;
+    }
+
+    .header .logo-title {
+        float: left;
+        height: 34px;
+        line-height: 34px;
+        font-size: 34px;
+        color: #333;
+        margin-top: 54px;
+    }
+
+    .w {
+        width: 1210px;
+    }
+
+    .body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-attachment:fixed;
+        background-image: url(../assets/userdetail.jpeg);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        margin-top: 40px;
+        height: 100%;
+        padding-top: 40px;
+        padding-right: 20px;
+        width: 100%;
+        position: center;
+    }
+
+    .total {}
+
+    .avatar-uploader .el-upload {
+        border: 1px dashed #d9d9d9;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .avatar-uploader .el-upload:hover {
+        border-color: #409EFF;
+    }
+
+    .avatar-uploader-icon {
+        font-size: 28px;
+        color: #8c939d;
+        width: 178px;
+        height: 178px;
+        line-height: 178px;
+        text-align: center;
+    }
+
+    .avatar {
+        width: 178px;
+        height: 178px;
+        display: block;
+    }
+
+    .el-input {
+        width: 800px;
+        float: left;
+        -webkit-border-radius: 5px;
+        border-radius: 10px;
+        -moz-border-radius: 5px;
+        border: 1px solid #eaeaea;
+        box-shadow: 0 0 25px #cac6c6;
+        background-clip: padding-box;
+    }
+    .el-button{
+        float: left;
+        -webkit-border-radius: 5px;
+        border-radius: 10px;
+        -moz-border-radius: 5px;
+        border: 1px solid #eaeaea;
+        box-shadow: 0 0 25px #cac6c6;
+        background-clip: padding-box;
+    }
+
+    .el-radio {
+        float: left;
+        margin-top: 10px;
+    }
+    .pics{
+        display: flex;
+        justify-content: left;
+        align-items: left;
+    }
+    /deep/ .el-upload__tip{
+        color:red;
+    }
+    /deep/ .el-form-item__label{
+        color:black;
+    }
 </style>

@@ -32,10 +32,36 @@ const insertComment=(data)=>
 const getGoodsType=()=>
     axios.get('/Goods/getGoodsType')
 
+//获取所有的商品数量
+const getAllGoodsCount=()=>
+    axios.get('/Goods/getGoodsCount')
+
+//商品全局信息获取
+const getGoodsDetail=(page)=>
+    axios.get('/Goods/goodsFilter?currentPage='+page+'&pageSize=10')
+
+//商品模糊搜索数量
+const getMuoGoodsCount=(name)=>
+    axios.get('/Goods/getGoodsCount?&goodsName='+name)
+
+//商品模糊搜索商品
+const getMuoGoodsDetail=(name,page)=>
+    axios.get('/Goods/goodsFilter?goodsName='+name+'&currentPage='+page+'&pageSize=10')
+
+//插入商品
+const insetGoods=(data)=>
+    axios.post('/Goods/insertGoods',data)
+
 export{
     getGoodDetail,
     remdou,
     getComment,
     insertComment,
-    getGoodsType
+    getGoodsType,
+    getAllGoodsCount,
+    getGoodsDetail,
+    getMuoGoodsCount,
+    getMuoGoodsDetail,
+    insetGoods
+
 }

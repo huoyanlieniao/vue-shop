@@ -6,6 +6,18 @@
  * @version: 1.0
  -->
 <template>
+    <div class="total">
+        <div class="header">
+            <div class="logo-con w clearfix">
+<!--                <a href="https://www.jd.com" class="logo "></a>-->
+<!--                <div class="logo-title">商家注册</div>-->
+<!--                <div class="have-account">已有账号？ <a href="http://localhost:8080/login?ReturnUrl=http://localhost:8080/">-->
+<!--                    <font color="#FF0000">请登录&gt;</font>-->
+<!--                </a></div>-->
+                <el-button icon="el-icon-sort" @click="goto">普通用户注册</el-button>
+            </div>
+        </div>
+        <div class="body">
     <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
         <el-form-item label="用户名" prop="username">
             <el-input v-model="ruleForm.username"></el-input>
@@ -54,6 +66,7 @@
                     :limit="1"
                     :on-exceed="handleExceed"
                     :file-list="licence"
+                    :on-change="fileChange1"
             >
                 <el-button size="small" type="primary">点击上传</el-button>
                 <template #tip>
@@ -67,7 +80,7 @@
 
             <el-upload
                     class="upload-demo"
-                    action="https://jsonplaceholder.typicode.com/posts/"
+                    action=""
                     :on-preview="handlePreview"
                     :on-remove="handleRemove"
                     :before-remove="beforeRemove"
@@ -76,6 +89,7 @@
                     :limit="1"
                     :on-exceed="handleExceed"
                     :file-list="identityFront"
+                    :on-change="fileChange2"
             >
                 <el-button size="small" type="primary">点击上传</el-button>
                 <template #tip>
@@ -97,6 +111,7 @@
                     :limit="1"
                     :on-exceed="handleExceed"
                     :file-list="identityBack"
+                    :on-change="fileChange3"
             >
                 <el-button size="small" type="primary">点击上传</el-button>
                 <template #tip>
@@ -111,7 +126,8 @@
             <el-button @click="resetForm('ruleForm')">重置</el-button>
         </el-form-item>
     </el-form>
-
+        </div>
+    </div>
 </template>
 
 <script>
@@ -120,6 +136,9 @@
     var boolean=true
     export default {
         data() {
+            var numReg = /^[0-9]*$/
+
+            var numRe = new RegExp(numReg)
             //用户名检验
             var checkUsername = (rule, value, callback) => {
                 console.log(value)
@@ -241,10 +260,10 @@
                 if (value == '' || value == undefined || value == null) {
                     boolean = false;
                     callback(new Error('收款账户不能为空'))
-                } else if (!Number.isInteger(value)) {
-                    boolean = false;
-                    callback(new Error('银行卡号必须全为数字'))
-                } else if (value.trim().length < 12 || value.trim().length > 19) {
+                }  else if (!numRe.test(value)){
+                    boolean=false;
+                    callback(new Error('银行卡号必须全为数字'));
+                }else if (value.trim().length < 12 || value.trim().length > 19) {
                     boolean = false;
                     callback(new Error('银行卡号长度必须在12到19之间'))
                 } else if (strBin.indexOf(value.substring(0, 2)) === -1) {
@@ -271,7 +290,7 @@
                     username: '',
                     password: '',
                     email: '',
-                    role: '1',
+                    role: '0',
                     Password2: '',
                     phone: '',
                     sex: '1',
@@ -17517,7 +17536,6 @@
                 this.ruleForm.city = this.ruleForm.city + this.$refs["city"].getCheckedNodes()[0].pathLabels
             },
             submitForm(formName) {
-                boolean = true
                 if (boolean == true) {
                     let user = {
                         username: this.ruleForm.username,
@@ -17533,29 +17551,73 @@
                         account: this.ruleForm.account
                     }
 
-                    console.log(this.licence)
-                    console.log(this.identityFront)
-                    console.log(this.identityBack)
-
-
                     let formData = new FormData();
                     formData.append("user", JSON.stringify(user));
                     formData.append("businessUser", JSON.stringify(businessUser))
-                    formData.append("licence",this.licence)
-                    formData.append("identityFront",this.identityFront)
-                    formData.append("identityBack",this.identityBack)
+                    formData.append("licence",this.licence[0])
+                    formData.append("identityFront",this.identityFront[0])
+                    formData.append("identityBack",this.identityBack[0])
 
-                    console.log(formData)
                     UserAPI.registerBusinessCommon(formData).then(res => {
-                        console.log(res)
+                        if(res.data.code==208){
+                            this.showMessage("注册成功",'success')
+                            this.$router.push('/');
+                        }else{
+                            this.showMessage("注册失败",'info')
+                        }
                     })
 
-                    this.$router.push('/');
+                    // this.$router.push('/');
                 } else {
                     window.alert("表单数据存在错误");
                 }
 
+            },
+            fileChange1(file){
+                this.licence=[]
+                this.licence.push(file.raw)
+            },
+            fileChange2(file){
+                this.identityFront=[]
+                this.identityFront.push(file.raw)
+            },
+            fileChange3(file){
+                this.identityBack=[]
+                this.identityBack.push(file.raw)
+            },
+            goto(){
+
+                    this.$router.push('/register')
+
+            },
+            goout(){
+                var exp = new Date();
+                exp.setTime(exp.getTime() - 1);
+                if(this.userId=!null){
+                    document.cookie = "userId:"+"="+""+";expires="+exp.toGMTString()
+                }
+                if(this.businesssId=!null){
+                    document.cookie = "businesssId:"+"="+""+";expires="+exp.toGMTString()
+                }
+                if(this.admin=!null){
+                    document.cookie = "admin:"+"="+""+";expires="+exp.toGMTString()
+                }
+                this.dialogVisible=false
+                this.reload()
+            } ,gotologin(){
+                console.log("aa")
+                this.$router.push('/login');
+            },
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
             }
+            ,showMessage(data,status){
+                this.$message({
+                    type: status,
+                    message: data
+                });
+            },
+
 
 
         }
@@ -17564,6 +17626,90 @@
 </script>
 
 <style scoped>
+    /*.avatar-uploader .el-upload {*/
+    /*    border: 1px dashed #d9d9d9;*/
+    /*    border-radius: 6px;*/
+    /*    cursor: pointer;*/
+    /*    position: relative;*/
+    /*    overflow: hidden;*/
+    /*}*/
+    /*.avatar-uploader .el-upload:hover {*/
+    /*    border-color: #409EFF;*/
+    /*}*/
+    /*.avatar-uploader-icon {*/
+    /*    font-size: 28px;*/
+    /*    color: #8c939d;*/
+    /*    width: 178px;*/
+    /*    height: 178px;*/
+    /*    line-height: 178px;*/
+    /*    text-align: center;*/
+    /*}*/
+    /*.avatar {*/
+    /*    width: 178px;*/
+    /*    height: 178px;*/
+    /*    display: block;*/
+    /*}*/
+    .header {
+        height: 110px;
+        background: url(//misc.360buyimg.com/user/reg/3.0.0/css/i/headbg.jpg) repeat-x left bottom;
+    }
+
+    .header .logo {
+        width: 120px;
+        height: 80px;
+        margin-top: 26px;
+        margin-right: 1.25rem;
+        float: left;
+        background: url(../assets/logo1.png) no-repeat;
+        background-size:cover;
+    }
+    .clearfix:after {
+        content: ".";
+        display: block;
+        height: 0;
+        clear: both;
+        visibility: hidden;
+    }
+
+    .header .have-account {
+        font-size: 22px;
+        float: right;
+        height: 50px;
+        margin-top: 34px;
+        color: #999;
+    }
+
+    .header .logo-title {
+        float: left;
+        height: 34px;
+        line-height: 34px;
+        font-size: 34px;
+        color: #333;
+        margin-top: 54px;
+    }
+
+    .w {
+        width: 1210px;
+    }
+
+    .body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-attachment:fixed;
+        background-image: url(../assets/regisiter1.jpeg);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        margin-top: 40px;
+        height: 100%;
+        padding-top: 40px;
+        padding-right: 20px;
+        width: 100%;
+        position: center;
+    }
+
+    .total {}
+
     .avatar-uploader .el-upload {
         border: 1px dashed #d9d9d9;
         border-radius: 6px;
@@ -17571,9 +17717,11 @@
         position: relative;
         overflow: hidden;
     }
+
     .avatar-uploader .el-upload:hover {
         border-color: #409EFF;
     }
+
     .avatar-uploader-icon {
         font-size: 28px;
         color: #8c939d;
@@ -17582,9 +17730,37 @@
         line-height: 178px;
         text-align: center;
     }
+
     .avatar {
         width: 178px;
         height: 178px;
         display: block;
+    }
+
+    .el-input {
+        width: 800px;
+        float: left;
+        -webkit-border-radius: 5px;
+        border-radius: 10px;
+        -moz-border-radius: 5px;
+        border: 1px solid #eaeaea;
+        box-shadow: 0 0 25px #cac6c6;
+        background-clip: padding-box;
+    }
+
+    .el-radio {
+        float: left;
+        margin-top: 10px;
+    }
+    .pics{
+        display: flex;
+        justify-content: left;
+        align-items: left;
+    }
+    /deep/ .el-upload__tip{
+        color:red;
+    }
+    /deep/ .el-form-item__label{
+        color:black;
     }
 </style>

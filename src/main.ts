@@ -6,13 +6,18 @@ import ElementPlus from 'element-plus'
 import 'element-plus/lib/theme-chalk/index.css'
 // @ts-ignore
 import * as UserAPI from './api/user/index.js'
+import {Vue} from "vue-class-component";
+
 
 createApp(App).use(store).use(router).use(ElementPlus).mount('#app')
+
+
+
 
 // 全局拦截器,在进入需要用户权限的页面前校验是否已经登录
 router.beforeResolve((to, from, next) => {
 
-    var userId = UserAPI.getCookie("userId")
+    var userId = UserAPI.getCookie("userId:")
     console.log(userId)
     // const loginUser = localStorage.getItem('userId')
     // 判断路由是否设置相应校验用户权限

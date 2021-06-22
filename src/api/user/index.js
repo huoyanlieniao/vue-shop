@@ -37,12 +37,25 @@ const getUserId=(data)=>
 
 //获取cookid
 const getCookie=(data)=>{
-   var cookieStr = unescape(document.cookie);
-   //console.log(cookieStr);
-   var num= cookieStr.split("=");
-   var result=num[1];
-   //console.log(result)
-   return result;
+   // var cookieStr = unescape(document.cookie);
+   // //console.log(cookieStr);
+   // var num= cookieStr.split("=");
+   // var result=num[1];
+   // //console.log(result)
+    var strCookie = unescape(document.cookie);
+    var arrCookie = strCookie.split("; ");
+
+    for(var i = 0; i < arrCookie.length; i++){
+
+        var arr = arrCookie[i].split("=");
+        console.log(arr)
+        if(data == arr[0]){
+            return arr[1];
+        }else{
+            return "";
+        }
+    }
+
 }
 
 //用户名是否被占用

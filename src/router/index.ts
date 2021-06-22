@@ -4,8 +4,8 @@ import Home from '../views/Home.vue'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'Home',
-    component: Home
+    name: 'goodsview',
+    component: () => import(/* webpackChunkName: "about" */ '../views/GoodsView.vue')
   },
   {
     path: '/about',
@@ -46,9 +46,6 @@ const routes: Array<RouteRecordRaw> = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../views/UserDetail.vue'),
-    meta: {
-      requireAuth: true // 需要验证登录状态
-    }
   },
   {
     path: '/gooddetail',
@@ -57,6 +54,63 @@ const routes: Array<RouteRecordRaw> = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../views/GoodDetail.vue')
+  },
+  {
+    path: '/deal',
+    name: 'Deal',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/Deal.vue')
+  },
+  {
+    path: '/shopCar',
+    name: 'shopCar',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/ShopCar.vue'),
+    meta: {
+      requireAuth: true // 需要验证登录状态
+    }
+
+  },
+  {
+    path: '/dealView',
+    name: 'dealView',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/DealView.vue'),
+    meta: {
+      requireAuth: true // 需要验证登录状态
+    }
+
+  },
+  {
+    path: '/shop',
+    name: 'shop',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/Shop.vue'),
+
+  },
+  {
+    path: '/business',
+    name: 'business',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/Business.vue'),
+  },
+  {
+    path: '/root',
+    name: 'root',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/Root.vue'),
   },
 
 ]
