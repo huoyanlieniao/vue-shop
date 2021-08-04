@@ -6,13 +6,11 @@
  * @version: 1.0
  -->
 <template>
-
     <el-container>
             <el-header>
+                <el-button type="primary" icon="el-icon-search" @click="fi">搜</el-button>
                 <el-input v-model="input" placeholder="请输入搜索内容"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="find">搜索</el-button>
-
-
             </el-header>
 
             <el-main>
@@ -58,6 +56,9 @@
             </el-footer>
 
     </el-container>
+
+
+
 </template>
 
 <script>
@@ -94,7 +95,6 @@
                     this.Type=res.data.result[0]
                     console.log(this.Type)
                 })
-                
                 let GoodsCount=res.data.result[0].GoodsCount
                 this.Page.GoodsCount=GoodsCount
                 this.Page.PageCount=(this.Page.GoodsCount/10)+1
@@ -112,6 +112,7 @@
 
         },
         methods: {
+
             PictureDeal(a) {
                 //将穿进来的照片列表处理，只取第一个然后将其处理成图片url
                 if (a.length > 0) {
@@ -126,11 +127,12 @@
             gotogoods(item) {
                 this.$router.push({path: '/gooddetail', query: {goodsUUID: item}})
             },
-            showMessage(data, status) {
-                this.$message({
-                    type: status,
-                    message: data
-                });
+            showMessage(message, status) {
+                // this.$message({
+                //     type: status,
+                //     message: data
+                // });
+                this.$refs.setsetMessageShow(message, status)
             },
             find() {
                 GoodAPI.getMuoGoodsCount(this.input).then(res => {
@@ -200,10 +202,15 @@
                 }
                 this.dialogVisible=false
                 this.reload()
-            } ,gotologin(){
+            }
+            ,gotologin(){
                 console.log("aa")
                 this.$router.push('/login');
             },
+            fi(){
+                console.log("aaaaaaaa")
+                this.$emit('ddd');
+            }
         }
     }
 
@@ -214,11 +221,8 @@
         margin-left: 200px;
         margin-right: 30px;
         width: 60%;
-
         border: 1px solid #ccc;
-
         float: left;
-
         box-sizing: border-box;
     }
     .el-button{

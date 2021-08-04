@@ -4,15 +4,18 @@ import router from './router'
 import store from './store'
 import ElementPlus from 'element-plus'
 import 'element-plus/lib/theme-chalk/index.css'
+import alert from './tool/Alert.vue'
+import { defineComponent } from 'vue'
+import { ElMessage } from 'element-plus'
 // @ts-ignore
 import * as UserAPI from './api/user/index.js'
-import {Vue} from "vue-class-component";
+import { Vue } from "vue-class-component";
 
 
-createApp(App).use(store).use(router).use(ElementPlus).mount('#app')
-
-
-
+const app=createApp(App)
+app.use(store).use(router).use(ElementPlus)
+app.component('my-alert',alert)
+app.mount('#app')
 
 // 全局拦截器,在进入需要用户权限的页面前校验是否已经登录
 router.beforeResolve((to, from, next) => {

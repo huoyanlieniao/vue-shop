@@ -1,5 +1,6 @@
 <template>
   <div id="nav" class="ma">
+    <my-alert ref="myAlert"></my-alert>
     <el-container>
       <el-header>
         <div class="header">
@@ -138,10 +139,10 @@
         this.isRouterAlive=false
         this.$nextTick(function () {
           this.isRouterAlive=true
-
         })
       },
       gotologin(){
+        this.$refs.myAlert.setAlert("xiao","success","tishi")
         console.log("aa")
         this.$router.push('/login');
       },
@@ -159,8 +160,7 @@
         }
         this.dialogVisible=false
         this.reload()
-      }
-
+      },
     }
   }
 </script>
