@@ -52,5 +52,4 @@ export{
     returnDeal,
     getShopAllDeal,
     getGoodAllDeal
-
 }

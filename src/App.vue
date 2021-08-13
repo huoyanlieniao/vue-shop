@@ -5,6 +5,7 @@
       <el-header>
         <div class="header">
           <div class="logo-con w clearfix">
+            <el-button type="primary" @click="this.$router.push('/aaa')">ce</el-button>
             <a href="http://localhost:8080" class="logo "></a>
             <div class="logo-title" v-if="!Islogin" @click="gotologin()">欢迎登陆</div>
             <a target="_blank" class="q-link" style="outline: rgb(109, 109, 109) none 10px;" v-if="Islogin" @click="dialogVisible=true"><b></b>退出登录</a>

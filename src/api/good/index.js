@@ -10,8 +10,15 @@ import axios from 'axios'
 axios.defaults.baseURL="/api";
 
 //获取商品详情
-const getGoodDetail=(data)=>
-    axios.get('/Goods/getGoodsByUUID?goodsUUID='+data)
+// const getGoodDetail=(data)=>
+//     axios.get('/Goods/getGoodsByUUID?goodsUUID='+data)
+
+function getGoodDetail(data){
+    return axios.get('/Goods/getGoodsByUUID?goodsUUID='+data).then(res=>{
+          return res.data.result[0]
+    })
+}
+
 
 //处理获取商品信息的双引号问题
 const remdou=(data)=>{

@@ -284,7 +284,6 @@ export default{
                     this.tuicommentNode=false
                     this.showMessage("退货成功",'success')
                     this.DealList[this.index].assess=this.assess
-
                 }else{
                     this.showMessage("退货失败",'info')
                 }
